@@ -1,0 +1,179 @@
+id,name
+0,abs
+1,aktywne rozpoznawanie znaków ograniczenia prędkości
+2,aktywny asystent hamowania awaryjnego
+3,aktywny asystent zmiany pasa ruchu
+4,aktywny system monitorowania kondycji kierowcy
+5,alarm ruchu poprzecznego z tyłu pojazdu
+6,android auto
+7,apple carplay
+8,asystent (czujnik) martwego pola
+9,asystent hamowania - brake assist
+10,asystent hamowania awaryjnego w mieście
+11,asystent jazdy w korku
+12,asystent pasa ruchu
+13,asystent pokonywania zakrętów
+14,asystent zapobiegania kolizjom na skrzyzowaniu
+15,asystent świateł drogowych
+16,automatyczna kontrola ogrzewania
+17,automatyczna kontrola zjazdu ze stoku
+18,autonomiczny system kierowania
+19,blokada mechanizmu różnicowego
+20,boczna poduszka powietrzna kierowcy
+21,boczne poduszki powietrzne - przód
+22,boczne poduszki powietrzne - tył
+23,cyfrowy kluczyk
+24,czujnik deszczu
+25,czujnik zmierzchu
+26,dach materiałowy
+27,dach otwierany elektrycznie
+28,dach otwierany elektrycznie pilotem
+29,dach panoramiczny
+30,dach z tworzywa sztucznego
+31,dostęp do internetu
+32,drugi szyberdach szklany - przesuwny i uchylny el.
+33,dynamiczne światła doświetlające zakręty
+34,dźwignia zmiany biegów wykończona skórą
+35,ekran dotykowy
+36,elektroniczna kontrola ciśnienia w oponach
+37,elektroniczna regul. charakterystyki zawieszenia
+38,elektroniczny system rozdziału siły hamowania
+39,elektryczne szyby przednie
+40,elektryczne szyby tylne
+41,elektrycznie ustawiany fotel kierowcy
+42,elektrycznie ustawiany fotel pasażera
+43,elektryczny hamulec postojowy
+44,esp
+45,felgi aluminiowe 15
+46,felgi aluminiowe 16
+47,felgi aluminiowe 17
+48,felgi aluminiowe 18
+49,felgi aluminiowe 19
+50,felgi aluminiowe 20
+51,felgi aluminiowe od 21
+52,felgi stalowe
+53,filtr cząstek stałych
+54,fotele przednie wentylowane
+55,fotele przednie z funkcje masażu
+56,fotele tylne wentylowane
+57,fotele tylne z funkcje masażu
+58,gniazdo usb
+59,hak
+60,hamulce z kompozytów ceramicznych
+61,hardtop
+62,interfejs bluetooth
+63,isofix (punkty mocowania fotelika dziecięcego)
+64,kamera panoramiczna 360
+65,kamera parkowania tył
+66,kamera w lusterku bocznym
+67,keyless entry
+68,keyless go
+69,kierownica ogrzewana
+70,kierownica skórzana
+71,kierownica sportowa
+72,kierownica wielofunkcyjna
+73,kierownica ze sterowaniem radia
+74,klimatyzacja automatyczna
+75,"klimatyzacja automatyczna, dwustrefowa"
+76,klimatyzacja automatyczna: 3 strefowa
+77,klimatyzacja automatyczna: 4 lub wiêcej strefowa
+78,klimatyzacja dla pasażerów z tyłu
+79,klimatyzacja manualna
+80,kolumna kierownicy regulowana elektrycznie
+81,kontrola odległości od poprzedzającego pojazdu
+82,kontrola odległości z przodu (przy parkowaniu)
+83,kontrola odległości z tyłu (przy parkowaniu)
+84,kontrola trakcji
+85,"kurtyna powietrzna z tyłu, poprzeczna"
+86,kurtyny powietrzne - przód
+87,kurtyny powietrzne - tył
+88,lampy bi-ksenonowe
+89,lampy doświetlające zakręt
+90,lampy ksenonowe
+91,lampy przeciwmgielne
+92,lampy przeciwmgielne w technologii led
+93,lampy przednie w technologii led
+94,lampy tylne w technologii led
+95,lane assist - kontrola zmiany pasa ruchu
+96,lusterka boczne składane elektrycznie
+97,lusterka boczne ustawiane elektrycznie
+98,niezależny system parkowania
+99,ogranicznik prędkości
+100,ogrzewane siedzenia tylne
+101,ogrzewanie postojowe
+102,opony letnie
+103,opony off-road
+104,opony runflat
+105,opony wielosezonowe
+106,opony zimowe
+107,osiągi i tuning
+108,oświetlenie adaptacyjne
+109,oświetlenie drogi do domu
+110,oświetlenie wnętrza led
+111,park assistant - asystent parkowania
+112,podgrzewana przednia szyba
+113,podgrzewane lusterka boczne
+114,podgrzewany fotel kierowcy
+115,podgrzewany fotel pasażera
+116,poduszka kolan kierowcy
+117,poduszka kolan pasażera
+118,poduszka powietrzna centralna
+119,poduszka powietrzna kierowcy
+120,poduszka powietrzna pasażera
+121,poduszka powietrzna pasów bezpieczeństwa
+122,poduszki powietrzne czołowe - tył
+123,podłokietniki - przód
+124,podłokietniki - tył
+125,przyciemniane tylne szyby
+126,radio
+127,reflektory laserowe
+128,regul. elektr. podparcia lędźwiowego - kierowca
+129,regul. elektr. podparcia lędźwiowego - pasażer
+130,regulowany dyferencjał centralny
+131,rolety na bocznych szybach opuszczane elektrycznie
+132,rolety na bocznych szybach opuszczane ręcznie
+133,siedzenie z pamięcią ustawienia
+134,sportowe fotele - przód
+135,spryskiwacze reflektorów
+136,sterowanie funkcjami pojazdu za pomocą głosu
+137,"system chroniący przed kolizja, boczny"
+138,"system chroniący przed kolizja, tylny"
+139,system emitujący dźwięk silnika (avas)
+140,system hamowania awaryjnego dla ochrony pieszych
+141,system minimalizujący skutki kolizji
+142,system nagłośnienia
+143,system nawigacji satelitarnej
+144,system ochrony słuchu w przypadku kolizji
+145,system odzyskiwania energii
+146,system ostrzegający o możliwej kolizji
+147,system powiadamiania o wypadku
+148,system rekomendacji przerw podczas trasy
+149,system rozpoznawania znaków drogowych
+150,system start/stop
+151,system wspomagania hamowania
+152,system wykrywania zmęczenie kierowcy
+153,system zabezpieczający podczas dachowania
+154,szyberdach szklany - przesuwny i uchylny elektrycz
+155,szyberdach szklany - przesuwny i uchylny ręcznie
+156,tapicerka alcantara
+157,tapicerka częściowo skórzana
+158,tapicerka materiałowa
+159,tapicerka skórzana
+160,tempomat
+161,tempomat adaptacyjny acc
+162,tempomat przewidujący pcc
+163,uruchamianie silnika bez użycia kluczyków
+164,wspomaganie kierownicy
+165,wspomaganie ruszania pod górę- hill holder
+166,wycieraczki
+167,wyświetlacz typu head-up
+168,zawieszenie hydropneumatyczne
+169,zawieszenie komfortowe
+170,zawieszenie pneumatyczne
+171,zawieszenie regulowane
+172,zawieszenie sportowe
+173,zestaw głośnomówiący
+174,zmiana biegów w kierownicy
+175,ładowanie bezprzewodowe urządzeń
+176,światła do jazdy dziennej
+177,światła do jazdy dziennej diodowe led
