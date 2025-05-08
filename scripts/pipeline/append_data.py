@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, text
 engine = create_engine("postgresql+psycopg2://postgres:1234@localhost:5432/car_database")
 
 # Define your local CSV path
-data_dir = "C:/Users/Lukasz Pindus/VS Code Python/car_price_analysis/data"
+data_dir = "C:/Users/Lukasz Pindus/VS Code Python/automotive_data_project/data"
 
 # Load the cleaned CSVs into pandas
 df_listings = pd.read_csv(f"{data_dir}/listings.csv")
