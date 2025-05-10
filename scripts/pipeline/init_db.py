@@ -49,7 +49,7 @@ with engine.begin() as conn:
             description TEXT,
             battery_capacity_kwh NUMERIC,
             range_km NUMERIC,
-            engine_displacement_cm3 NUMERIC,
+            engine_capacity_cm3 NUMERIC,
             power_hp NUMERIC,
             co2_emissions_gpkm NUMERIC,
             urban_fuel_consumption_l_per_100km NUMERIC,

@@ -12,6 +12,9 @@ df_listings = pd.read_csv(f"{data_dir}/listings.csv")
 df_equipment = pd.read_csv(f"{data_dir}/equipment_options.csv")
 df_link = pd.read_csv(f"{data_dir}/listing_equipment.csv")
 
+# Clean null or empty names before inserting
+df_equipment = df_equipment[df_equipment['name'].notna() & (df_equipment['name'].str.strip() != '')]
+
 # Append equipment options and listings
 df_equipment.to_sql("equipment_options", engine, if_exists="append", index=False)
 df_listings.to_sql("listings", engine, if_exists="append", index=False)

@@ -4,6 +4,9 @@ import os
 import re
 from datetime import datetime, timedelta
 from itertools import chain
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 from scripts.utils.equipment_utils import (
     extract_equipment_list,
     build_equipment_df,
@@ -25,7 +28,7 @@ from scripts.utils.data_cleaning_utils import (
 
 # Load the merged dataset from CSV
 df = pd.read_csv(
-    'C:/Users/Lukasz Pindus/VS Code Python/car_price_analysis/data/merged01.csv',
+    'C:/Users/Lukasz Pindus/VS Code Python/automotive_data_project/data/merged01.csv',
     dtype={
         'Pojemność baterii': str,
         'Autonomia': str,
@@ -46,7 +49,7 @@ df['Autonomia_km'] = clean_range_column(df['Autonomia'])
 df = df.drop('Autonomia', axis=1)
 
 # Engine displacement (cm3)
-df['engine_displacement_cm3'] = clean_engine_displacement(df['Pojemność skokowa'])
+df['engine_capacity_cm3'] = clean_engine_displacement(df['Pojemność skokowa'])
 df = df.drop('Pojemność skokowa', axis=1)
 
 # Power in horsepower
@@ -135,7 +138,7 @@ column_mapping = {
     'equipment': 'equipment', 'price': 'price', 'currency': 'currency', 'price_level': 'price_level',
     'advert_date': 'advert_date', 'advert_id': 'advert_id', 'description': 'description',
     'Pojemność_baterii_kWh': 'battery_capacity_kwh', 'Autonomia_km': 'range_km',
-    'engine_displacement_cm3': 'engine_displacement_cm3', 'power_hp': 'power_hp',
+    'engine_capacity_cm3': 'engine_capacity_cm3', 'power_hp': 'power_hp',
     'co2_emissions_gpkm': 'co2_emissions_gpkm',
     'urban_fuel_consumption_l_per_100km': 'urban_fuel_consumption_l_per_100km',
     'extraurban_fuel_consumption_l_per_100km': 'extraurban_fuel_consumption_l_per_100km',
@@ -153,7 +156,7 @@ dtype_conversion = {
     'price': 'float32', 'battery_capacity_kwh': 'float32', 'range_km': 'float32',
     'power_hp': 'float32', 'co2_emissions_gpkm': 'float32', 'urban_fuel_consumption_l_per_100km': 'float32',
     'extraurban_fuel_consumption_l_per_100km': 'float32', 'average_energy_consumption_kwh_per_100km': 'float32',
-    'battery_health_percent': 'float32', 'max_electric_power_hp': 'float32', 'engine_displacement_cm3': 'float32',
+    'battery_health_percent': 'float32', 'max_electric_power_hp': 'float32', 'engine_capacity_cm3': 'float32',
     'accident_free': 'boolean', 'registered_in_poland': 'boolean', 'first_owner': 'boolean',
     'serviced_at_authorized_station': 'boolean', 'has_registration_number': 'boolean', 'brake_energy_recovery': 'boolean',
     'make': 'category', 'model': 'category', 'version': 'category', 'color': 'category',
@@ -221,7 +224,7 @@ equipment_df = build_equipment_df(df['equipment_list'])
 listing_equipment_df = generate_listing_equipment_relations(df, equipment_df)
 
 # Save cleaned listings and equipment CSVs to disk
-output_dir = r'C:\Users\Lukasz Pindus\VS Code Python\car_price_analysis\data'
+output_dir = r'C:\Users\Lukasz Pindus\VS Code Python\automotive_data_project\data'
 listings_df = df.drop(columns=['equipment', 'equipment_list'])
 listings_df.to_csv(os.path.join(output_dir, 'listings.csv'), index=False)
 equipment_df.to_csv(os.path.join(output_dir, 'equipment_options.csv'), index=False)

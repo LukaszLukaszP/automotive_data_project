@@ -27,19 +27,28 @@ def clean_range_column(series, expected_unit='km'):
 
 
 def clean_engine_displacement(series, expected_unit='cm3'):
-    # Remove thousand separators (spaces) from the strings
-    cleaned = series.str.replace(' ', '', regex=False)
+    # Ensure strings and trim whitespace
+    series = series.astype(str).str.strip()
 
-    # Extract the numeric displacement and its unit
-    extracted = cleaned.str.extract(r'^(?P<value>\d+\.?\d*)\s*(?P<unit>[a-zA-Z/]+)$', expand=True)
+    # Extract numeric part and unit, allowing letters+digits in unit
+    extracted = series.str.extract(
+        r'(?P<value>[\d\s]+(?:[.,]\d+)?)[\s\u00A0]*?(?P<unit>[a-zA-Z0-9/]+)$',
+        expand=True
+    )
 
-    # Verify units match the expected pattern
+    # Clean value: remove spaces and unify decimal point
+    extracted['value'] = (
+        extracted['value']
+        .str.replace(r'\s+', '', regex=True)
+        .str.replace(',', '.')
+    )
+
+    # Validate units
     non_null_units = extracted['unit'].dropna()
-    unexpected_units = non_null_units[~non_null_units.eq(expected_unit)].unique()
-    if len(unexpected_units) > 0:
-        raise ValueError(f"Unexpected units in engine displacement: {unexpected_units.tolist()}")
+    unexpected = non_null_units[~non_null_units.eq(expected_unit)].unique()
+    if len(unexpected) > 0:
+        raise ValueError(f"Unexpected units in engine displacement: {unexpected.tolist()}")
 
-    # Convert and return numeric displacement as float
     return extracted['value'].astype(float)
 
 
