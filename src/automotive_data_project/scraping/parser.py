@@ -151,8 +151,8 @@ def parse_offer_page(
 ) -> RawListing:
     """Parse one detail page into source-shaped fields."""
     soup = BeautifulSoup(html, "html.parser")
-    fallback_id = advert_id or source_url.rstrip("/").rsplit("/", 1)[-1]
-    parsed_id = _extract_advert_id(soup, fallback_id)
+    fallback_id = source_url.rstrip("/").rsplit("/", 1)[-1]
+    parsed_id = advert_id or _extract_advert_id(soup, fallback_id)
     price_raw, currency = _extract_price(soup)
     return RawListing(
         advert_id=parsed_id,

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 from automotive_data_project.config import AppConfig, ScrapeConfig
-from automotive_data_project.scraping.client import OtomotoClient, add_page_param
+from automotive_data_project.scraping.client import FetchResult, OtomotoClient, add_page_param
 from automotive_data_project.scraping.exceptions import AccessBlocked, CaptchaDetected, FetchFailed, RateLimited
 from automotive_data_project.scraping.parser import parse_listing_page, parse_offer_page, parse_total_pages
 from automotive_data_project.storage.database import init_schema, make_engine, make_session_factory
@@ -22,7 +23,32 @@ class PipelineStats:
     skipped_duplicates: int = 0
     parse_errors: int = 0
     saved_records: int = 0
+    last_seen_updates: int = 0
     stopped_reason: str | None = None
+
+
+class OfflineFixtureClient:
+    """Client-compatible fixture reader for full offline pipeline verification."""
+
+    def __init__(self, fixtures_dir: Path) -> None:
+        self.fixtures_dir = fixtures_dir
+
+    def fetch(self, url: str) -> FetchResult:
+        if "page=" in url or "/osobowe/" in url and "/oferta/" not in url:
+            path = self.fixtures_dir / "listing_page.html"
+        elif "ID1001" in url or "1001" in url:
+            path = self.fixtures_dir / "offer_complete.html"
+        elif "ID1002" in url or "1002" in url:
+            path = self.fixtures_dir / "offer_missing_field.html"
+        else:
+            raise FileNotFoundError(f"No offline fixture mapped for URL: {url}")
+        return FetchResult(url=url, html=path.read_text(encoding="utf-8"), status_code=200)
+
+    def save_debug_html(self, html: str, target_dir: Path, name: str) -> Path:
+        target_dir.mkdir(parents=True, exist_ok=True)
+        path = target_dir / name
+        path.write_text(html, encoding="utf-8")
+        return path
 
 
 def collect_from_fixture(html: str, source_url: str = "fixture://offer.html") -> list[dict[str, object]]:
@@ -30,12 +56,16 @@ def collect_from_fixture(html: str, source_url: str = "fixture://offer.html") ->
     return [normalize_listing(raw)]
 
 
-def run_pipeline(config: AppConfig, scrape_config: ScrapeConfig | None = None) -> PipelineStats:
+def run_pipeline(
+    config: AppConfig,
+    scrape_config: ScrapeConfig | None = None,
+    offline_fixtures: Path | None = None,
+) -> PipelineStats:
     scrape = scrape_config or config.scrape
     engine = make_engine(config.database_url)
     init_schema(engine)
     session_factory = make_session_factory(engine)
-    client = OtomotoClient(scrape)
+    client = OfflineFixtureClient(offline_fixtures) if offline_fixtures else OtomotoClient(scrape)
     stats = PipelineStats()
     LOGGER.info(
         "Starting pipeline source=%s make=%s model=%s years=%s-%s max_pages=%s max_listings=%s concurrency=%s",
@@ -53,6 +83,7 @@ def run_pipeline(config: AppConfig, scrape_config: ScrapeConfig | None = None) -
         repo = ListingRepository(session)
         existing_ids = repo.existing_advert_ids(scrape.source)
         records: list[dict[str, object]] = []
+        seen_existing_ids: set[str] = set()
         search_url = scrape.search_url()
 
         try:
@@ -81,6 +112,7 @@ def run_pipeline(config: AppConfig, scrape_config: ScrapeConfig | None = None) -
                     break
                 if ref.advert_id in existing_ids:
                     stats.skipped_duplicates += 1
+                    seen_existing_ids.add(ref.advert_id)
                     continue
                 try:
                     detail = client.fetch(ref.url)
@@ -101,15 +133,17 @@ def run_pipeline(config: AppConfig, scrape_config: ScrapeConfig | None = None) -
                 break
 
         stats.saved_records = repo.upsert_many(records)
+        stats.last_seen_updates = repo.touch_seen(scrape.source, seen_existing_ids)
 
     LOGGER.info(
-        "Finished pipeline pages=%s found=%s new=%s duplicates=%s parse_errors=%s saved=%s stopped=%s",
+        "Finished pipeline pages=%s found=%s new=%s duplicates=%s parse_errors=%s saved=%s touched=%s stopped=%s",
         stats.pages_visited,
         stats.listings_found,
         stats.new_listings,
         stats.skipped_duplicates,
         stats.parse_errors,
         stats.saved_records,
+        stats.last_seen_updates,
         stats.stopped_reason,
     )
     return stats

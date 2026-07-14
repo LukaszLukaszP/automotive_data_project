@@ -54,6 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
     scrape.set_defaults(handler=handle_scrape)
 
     run = subparsers.add_parser("run-pipeline", help="Run the default small ETL pipeline.")
+    run.add_argument("--offline-fixtures", type=Path, help="Run the full pipeline using local HTML fixtures only.")
     run.set_defaults(handler=handle_run_pipeline)
 
     fixture = subparsers.add_parser("parse-fixture", help="Parse a local offer HTML file without network access.")
@@ -83,7 +84,8 @@ def handle_scrape(args: argparse.Namespace, config: AppConfig) -> None:
 
 
 def handle_run_pipeline(args: argparse.Namespace, config: AppConfig) -> None:
-    stats = run_pipeline(config)
+    offline_fixtures = args.offline_fixtures.resolve() if args.offline_fixtures else None
+    stats = run_pipeline(config, offline_fixtures=offline_fixtures)
     print(json.dumps(stats.__dict__, default=str, ensure_ascii=False, indent=2))
 
 

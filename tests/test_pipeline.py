@@ -1,49 +1,67 @@
-from dataclasses import replace
 from pathlib import Path
 
-import automotive_data_project.pipeline as pipeline_module
+from sqlalchemy import func, select
+
 from automotive_data_project.config import AppConfig, ScrapeConfig
-from automotive_data_project.scraping.client import FetchResult
+from automotive_data_project.pipeline import run_pipeline
 from automotive_data_project.storage.database import init_schema, make_engine, make_session_factory
+from automotive_data_project.storage.models import Listing
 from automotive_data_project.storage.repositories import ListingRepository
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-class FakeClient:
-    def __init__(self, config: ScrapeConfig) -> None:
-        self.config = config
-
-    def fetch(self, url: str) -> FetchResult:
-        if "page=" in url:
-            return FetchResult(url, (FIXTURES / "listing_page.html").read_text(encoding="utf-8"), 200)
-        if "ID1001" in url:
-            return FetchResult(url, (FIXTURES / "offer_complete.html").read_text(encoding="utf-8"), 200)
-        return FetchResult(url, (FIXTURES / "offer_missing_field.html").read_text(encoding="utf-8"), 200)
-
-    def save_debug_html(self, html: str, target_dir: Path, name: str) -> Path:
-        target_dir.mkdir(parents=True, exist_ok=True)
-        path = target_dir / name
-        path.write_text(html, encoding="utf-8")
-        return path
-
-
-def test_pipeline_on_fixture_database_and_max_listing_stop(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(pipeline_module, "OtomotoClient", FakeClient)
+def test_pipeline_on_offline_fixtures_deduplicates_and_touches_last_seen(tmp_path) -> None:
+    database_url = f"sqlite+pysqlite:///{tmp_path / 'offline.sqlite3'}"
     config = AppConfig(
-        database_url=f"sqlite+pysqlite:///{tmp_path / 'test.sqlite3'}",
+        database_url=database_url,
         data_dir=tmp_path,
         raw_html_dir=tmp_path / "html",
-        scrape=replace(ScrapeConfig(), max_pages=1, max_listings=1, request_delay_seconds=0, request_jitter_seconds=0),
+        scrape=ScrapeConfig(max_pages=1, max_listings=30, request_delay_seconds=0, request_jitter_seconds=0),
     )
 
-    stats = pipeline_module.run_pipeline(config)
-    rerun_stats = pipeline_module.run_pipeline(config)
+    first_stats = run_pipeline(config, offline_fixtures=FIXTURES)
+    engine = make_engine(database_url)
+    session_factory = make_session_factory(engine)
+    with session_factory() as session:
+        count_after_first = session.execute(select(func.count()).select_from(Listing)).scalar_one()
+        first_seen = {
+            row.advert_id: row.first_seen_at for row in session.execute(select(Listing)).scalars().all()
+        }
+        last_seen = {
+            row.advert_id: row.last_seen_at for row in session.execute(select(Listing)).scalars().all()
+        }
+
+    second_stats = run_pipeline(config, offline_fixtures=FIXTURES)
+    with session_factory() as session:
+        count_after_second = session.execute(select(func.count()).select_from(Listing)).scalar_one()
+        after = {row.advert_id: row for row in session.execute(select(Listing)).scalars().all()}
+
+    assert first_stats.saved_records == 2
+    assert first_stats.new_listings == 2
+    assert count_after_first == 2
+    assert second_stats.saved_records == 0
+    assert second_stats.skipped_duplicates == 2
+    assert second_stats.last_seen_updates == 2
+    assert count_after_second == 2
+    assert after["1001"].first_seen_at == first_seen["1001"]
+    assert after["1002"].first_seen_at == first_seen["1002"]
+    assert after["1001"].last_seen_at >= last_seen["1001"]
+    assert after["1002"].last_seen_at >= last_seen["1002"]
+
+
+def test_pipeline_stops_at_max_listings_on_offline_fixtures(tmp_path) -> None:
+    config = AppConfig(
+        database_url=f"sqlite+pysqlite:///{tmp_path / 'limited.sqlite3'}",
+        data_dir=tmp_path,
+        raw_html_dir=tmp_path / "html",
+        scrape=ScrapeConfig(max_pages=1, max_listings=1, request_delay_seconds=0, request_jitter_seconds=0),
+    )
+
+    stats = run_pipeline(config, offline_fixtures=FIXTURES)
 
     assert stats.saved_records == 1
     assert stats.stopped_reason == "max_listings"
-    assert rerun_stats.saved_records == 1
-    assert rerun_stats.skipped_duplicates == 1
 
 
 def test_repository_deduplication_reads_existing_ids(tmp_path) -> None:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
@@ -52,6 +52,18 @@ class ListingRepository:
     def existing_advert_ids(self, source: str = "otomoto") -> set[str]:
         rows = self.session.execute(select(Listing.advert_id).where(Listing.source == source)).all()
         return {row[0] for row in rows}
+
+    def touch_seen(self, source: str, advert_ids: set[str]) -> int:
+        """Update last_seen_at for existing adverts encountered again."""
+        if not advert_ids:
+            return 0
+        now = datetime.now(timezone.utc)
+        result = self.session.execute(
+            update(Listing)
+            .where(Listing.source == source, Listing.advert_id.in_(advert_ids))
+            .values(last_seen_at=now)
+        )
+        return int(result.rowcount or 0)
 
     def upsert_many(self, records: list[dict[str, object]]) -> int:
         if not records:
