@@ -27,8 +27,10 @@ from scripts.utils.data_cleaning_utils import (
 )
 
 # Load the merged dataset from CSV
+data_dir = Path(os.environ.get("DATA_DIR", "data"))
+
 df = pd.read_csv(
-    'C:/Users/Lukasz Pindus/VS Code Python/automotive_data_project/data/merged01.csv',
+    data_dir / 'merged01.csv',
     dtype={
         'Pojemność baterii': str,
         'Autonomia': str,
@@ -224,7 +226,7 @@ equipment_df = build_equipment_df(df['equipment_list'])
 listing_equipment_df = generate_listing_equipment_relations(df, equipment_df)
 
 # Save cleaned listings and equipment CSVs to disk
-output_dir = r'C:\Users\Lukasz Pindus\VS Code Python\automotive_data_project\data'
+output_dir = data_dir
 listings_df = df.drop(columns=['equipment', 'equipment_list'])
 listings_df.to_csv(os.path.join(output_dir, 'listings.csv'), index=False)
 equipment_df.to_csv(os.path.join(output_dir, 'equipment_options.csv'), index=False)

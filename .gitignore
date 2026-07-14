@@ -5,8 +5,11 @@ pyvenv.cfg
 __pycache__/
 *.py[cod]
 *.pyo
+*.egg-info/
 
 *.env
+*.sqlite3
+*.db
 
 data/merged/
 data/*.csv
@@ -16,5 +19,6 @@ data/*.csv
 *.swp
 *.bak
 *.tmp
+raw_data/debug_html/
 
 .ipynb_checkpoints/

@@ -1,134 +1,139 @@
 # Automotive Data Project
 
-This project is an extensible, end-to-end automotive data pipeline built in Python. It is designed to collect, clean, enrich, and store car listing data — currently from [Otomoto.pl](https://otomoto.pl) — in a structured PostgreSQL database. Future plans include advanced analytics, ML/AI modules, dashboard visualizations, and integration with conversational AI.
+Small Python ETL project for collecting a limited sample of public Otomoto car listing data, normalizing it, and loading it into a database for analysis.
 
----
+The supported MVP is intentionally modest: one make/model filter, narrow year range, low request volume, concurrency `1`, and safe stopping on 403, 429, or CAPTCHA. The project does not bypass blocks or CAPTCHA.
 
-## 🚗 Features
-
-* **Web scraping** with anti-duplicate logic
-* **Dynamic listing segmentation** to avoid pagination limits
-* **Data cleaning & transformation** including units, types, and missing values
-* **Equipment parsing & normalization**
-* **PostgreSQL schema creation and data loading**
-* **Modular architecture** ready for additional sources and ML/AI features
-
----
-
-## 🗂 Project Structure
+## ETL Flow
 
 ```text
-.
-├── data/                  # CSV exports, IDs, model mappings
-├── notebooks/            # Jupyter Notebooks (EDA, cleaning, legacy steps)
-├── scripts/
-│   ├── scraping_otomoto_skip_duplicates_V1.py   # Main scraping logic
-│   ├── merge_csvs.py                            # Merge raw data files
-│   ├── split_data_for_postgres.py               # Cleaning + final CSVs for SQL
-│   ├── append_data.py                           # Insert into PostgreSQL
-│   ├── init_db.py                               # DB schema + views
-│   ├── makes_and_models_scraping.py             # Otomoto brands & models
-│   └── utils/
-│       ├── data_cleaning_utils.py               # Specialized cleaning functions
-│       └── equipment_utils.py                   # Equipment parsing utilities
-├── .gitignore
-├── README.md
-└── requirements.txt
+CLI
+ -> config/env
+ -> requests HTML client
+ -> BeautifulSoup parser
+ -> cleaning/normalization
+ -> SQLAlchemy UPSERT
+ -> analysis examples
 ```
 
----
+## Structure
 
-## 🧪 Technologies Used
+```text
+src/automotive_data_project/   supported ETL package
+tests/                         offline tests and minimal HTML fixtures
+docs/                          audit, architecture, data dictionary, scraping policy
+examples/                      small local analysis script
+scripts/                       legacy scripts kept for reference
+otomoto_ingest/                legacy Scrapy/Playwright experiment
+data/                          local CSV/database outputs
+raw_data/                      optional debug HTML
+```
 
-* Python 3.10+
-* `requests`, `BeautifulSoup` (web scraping)
-* `pandas`, `numpy` (data processing)
-* `SQLAlchemy`, `psycopg2` (PostgreSQL connection)
-* `selenium` (dynamic scraping for brand/model data)
-* PostgreSQL 13+
+## Windows Setup
 
----
-
-## 🧹 Data Flow Overview
-
-1. **Scraping Otomoto:**
-
-   * Script: `scraping_otomoto_skip_duplicates_V1.py`
-   * Output: `data/all_offers_otomoto_no_vin_*.csv`
-   * Avoids duplicates using tracked `advert_id`s
-
-2. **Merging and Cleaning:**
-
-   * `merge_csvs.py` → merges raw CSVs
-   * `split_data_for_postgres.py` → cleans fields, renames columns, builds equipment mapping
-   * Outputs: `listings.csv`, `equipment_options.csv`, `listing_equipment.csv`
-
-3. **PostgreSQL Storage:**
-
-   * `init_db.py` creates schema
-   * `append_data.py` loads clean data into the database, remapping `local_id` to real primary keys
-
----
-
-## ⚙️ How to Run
-
-> Project is under active development. Environment setup will be simplified soon.
-
-### 1. Set up a virtual environment
-
-```bash
+```powershell
 python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
+.\.venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+python -m pip install -e .
 ```
 
-### 2. Configure PostgreSQL (local)
+Copy `.env.example` to `.env` for your local notes, but do not commit `.env`. In PowerShell you can set the database URL for the current session:
 
-Make sure your PostgreSQL server is running and update the connection string if needed.
-
-### 3. Run pipeline steps manually:
-
-```bash
-python scripts/scraping_otomoto_skip_duplicates_V1.py
-python scripts/merge_csvs.py
-python scripts/split_data_for_postgres.py
-python scripts/init_db.py
-python scripts/append_data.py
+```powershell
+$env:DATABASE_URL="postgresql+psycopg2://automotive:automotive@localhost:5432/automotive"
 ```
 
-> You can use Jupyter Notebooks for data exploration under `notebooks/`.
+If `DATABASE_URL` is not set, the project uses SQLite at `data/automotive_data.sqlite3`.
 
----
+## PostgreSQL
 
-## 📌 Plans & Roadmap
+Start a local PostgreSQL container:
 
-### 🔧 Short-term goals (next steps)
-- [ ] Refactor scraping script to capture all relevant columns
-- [ ] Improve error handling and logging in scraper
-- [ ] Standardize and validate all units and column names
-- [ ] Create interactive data exploration dashboard (Streamlit or Dash)
+```powershell
+docker compose up -d postgres
+```
 
-### 📊 Mid-term goals
-- [ ] Support additional data sources
-- [ ] Design PostgreSQL views for easier querying
-- [ ] Add unit tests for cleaning and merging logic
+Initialize schema without dropping data:
 
-### 🧠 Long-term / AI-focused goals
-- [ ] Build ML model for price prediction based on vehicle attributes
-- [ ] Implement classification of listings (e.g., by condition, seller type)
-- [ ] Add car recommendation engine (based on user preferences)
-- [ ] Integrate chatbot (LLM-based) to query listings or explain trends
+```powershell
+python -m automotive_data_project init-db
+```
 
-### ⚙️ Deployment / UX ideas
-- [ ] Expose API endpoints for filtered car search
-- [ ] Package scraping and cleaning as CLI tool or service
-- [ ] Containerize full pipeline using Docker
+Destructive reset is separate and requires an explicit flag:
 
+```powershell
+python -m automotive_data_project reset-db --yes-i-understand-this-drops-data
+```
 
----
+## Run A Small Scrape
 
-## 📂 Datasets
+```powershell
+python -m automotive_data_project scrape `
+  --make Toyota `
+  --model Corolla `
+  --year-from 2019 `
+  --year-to 2021 `
+  --max-pages 2 `
+  --max-listings 30
+```
 
-* Raw data is ignored in `.gitignore` due to size (>100 MB per file)
-* Example mappings (`brands_and_models.csv`, `equipment_options.csv`) included
-* To run full pipeline, scrape your own data or request access to anonymized sample
+Equivalent default run:
+
+```powershell
+python -m automotive_data_project run-pipeline
+```
+
+Parser-only development without network:
+
+```powershell
+python -m automotive_data_project parse-fixture tests\fixtures\offer_complete.html
+```
+
+## Tests
+
+```powershell
+python -m pytest
+```
+
+The normal test suite does not make real requests to Otomoto. It uses local HTML fixtures.
+
+## Example Analysis
+
+After loading data:
+
+```powershell
+python examples\example_analysis.py
+```
+
+The script prints median price by year, average price by fuel type, price by mileage bucket, and offer count by make/model.
+
+## Example SQL
+
+```sql
+SELECT production_year, COUNT(*) AS offers, AVG(price) AS avg_price
+FROM listings
+GROUP BY production_year
+ORDER BY production_year;
+
+SELECT make, model, COUNT(*) AS offers
+FROM listings
+GROUP BY make, model
+ORDER BY offers DESC;
+```
+
+## Known Limitations
+
+- Otomoto HTML selectors may change at any time.
+- Live scraping was not executed during automated tests.
+- Equipment is stored as JSON for MVP simplicity.
+- Old Selenium/Scrapy scripts are legacy and not part of the supported run path.
+- The project stores listing data only and avoids seller contact data.
+
+See also:
+
+- `docs/CODE_AUDIT.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DATA_DICTIONARY.md`
+- `docs/SCRAPING_POLICY.md`

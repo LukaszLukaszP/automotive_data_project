@@ -1,18 +1,15 @@
+import os
+
 from sqlalchemy import create_engine, text
 
-# Connect to the PostgreSQL database
-engine = create_engine("postgresql+psycopg2://postgres:1234@localhost:5432/car_database")
+# Legacy script kept for reference. Prefer `python -m automotive_data_project init-db`.
+database_url = os.environ.get("DATABASE_URL", "sqlite:///data/automotive_data.sqlite3")
+engine = create_engine(database_url)
 
 with engine.begin() as conn:
-    # Drop the view and tables if they already exist
-    conn.execute(text("DROP VIEW IF EXISTS listing_with_equipment_view"))
-    conn.execute(text("DROP TABLE IF EXISTS listing_equipment"))
-    conn.execute(text("DROP TABLE IF EXISTS equipment_options"))
-    conn.execute(text("DROP TABLE IF EXISTS listings"))
-
     # Create the main listings table with an auto-incrementing primary key
     conn.execute(text("""
-        CREATE TABLE listings (
+        CREATE TABLE IF NOT EXISTS listings (
             id SERIAL PRIMARY KEY,
             local_id INTEGER,
             make TEXT,
@@ -63,7 +60,7 @@ with engine.begin() as conn:
 
     # Create table for equipment options
     conn.execute(text("""
-        CREATE TABLE equipment_options (
+        CREATE TABLE IF NOT EXISTS equipment_options (
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL
         );
@@ -71,7 +68,7 @@ with engine.begin() as conn:
 
     # Create relation table between listings and equipment
     conn.execute(text("""
-        CREATE TABLE listing_equipment (
+        CREATE TABLE IF NOT EXISTS listing_equipment (
             listing_id INTEGER,
             equipment_id INTEGER,
             PRIMARY KEY (listing_id, equipment_id)
@@ -80,7 +77,7 @@ with engine.begin() as conn:
 
     # Create a view to see listings with their equipment as a single string
     conn.execute(text("""
-        CREATE VIEW listing_with_equipment_view AS
+        CREATE OR REPLACE VIEW listing_with_equipment_view AS
         SELECT
             l.*,
             string_agg(e.name, ', ') AS equipment

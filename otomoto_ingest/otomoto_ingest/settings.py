@@ -19,7 +19,7 @@ ADDONS = {}
 #USER_AGENT = "otomoto_ingest (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = False
+ROBOTSTXT_OBEY = True
 
 # Concurrency and throttling settings
 #CONCURRENT_REQUESTS = 16
@@ -86,26 +86,6 @@ DOWNLOAD_DELAY = 1
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
 
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0",
-]
-   
-RANDOMIZE_DOWNLOAD_DELAY = True
-
-DOWNLOADER_MIDDLEWARES = {
-    #'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-    #'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
-
-    #"scrapy_playwright.middleware.PlaywrightMiddleware": 543,
-    "scrapy_user_agents.middlewares.RandomUserAgentMiddleware": 400,
-    "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
-}
-
-DOWNLOAD_HANDLERS = {
-    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-}
-
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+# This Scrapy project is legacy and not the supported MVP path.
+# Playwright and random user-agent middleware were removed from active settings.
+RANDOMIZE_DOWNLOAD_DELAY = False
